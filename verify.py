@@ -5,8 +5,8 @@ from utils import read_key_from_file, create_hmac, verify_hmac
 def read_watermark(image_path: str) -> str:
     """Đọc nội dung watermark trong ảnh (không verify)."""
     img = Image.open(image_path)
-    data = stepic.decode(img)
-    return data.decode("utf-8")
+    data = stepic.decode(img)  # stepic.decode trả về str rồi
+    return data  # không cần decode nữa
 
 def extract_signature(image_path: str) -> str:
     """Trích riêng chữ ký từ watermark."""
