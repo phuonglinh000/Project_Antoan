@@ -11,11 +11,14 @@ def get_connection():
         ssl_ca="certs/ca.pem"
     )
 
-def save_image_history(filename, action, status):
+def save_image_history(filename, owner=None, logo_id=None, thoi_gian=None, signature=None, description=None):
     conn = get_connection()
     cursor = conn.cursor()
-    sql = "INSERT INTO image_history (filename, action, status) VALUES (%s, %s, %s)"
-    cursor.execute(sql, (filename, action, status))
+    sql = """
+        INSERT INTO image_history (filename, owner, logo_id, thoi_gian, signature, description)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """
+    cursor.execute(sql, (filename, owner, logo_id, thoi_gian, signature, description))
     conn.commit()
     cursor.close()
     conn.close()
