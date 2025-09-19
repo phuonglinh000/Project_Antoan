@@ -1,4 +1,3 @@
-# app_streamlit.py (chỉ phần chính, thay file cũ)
 import streamlit as st
 import os
 from PIL import Image
@@ -43,26 +42,26 @@ with tab2:
             if result:
                 st.success("✅ Chữ ký hợp lệ: Ảnh chưa bị chỉnh sửa!")
             else:
-                st.error("❌ Chữ ký KHÔNG hợp lệ: Ảnh bị chỉnh sửa hoặc metadata/key sai.")
+                st.error("❌ Chữ ký KHÔNG hợp lệ: Ảnh bị chỉnh sửa .")
                 # debug: show metadata fields
                 try:
-                    data_field, signature, owner, logo_id, ts = extract_data_and_signature(tmp)
+                    data_field, signature, owner, logo_id, ts, ts_vn = extract_data_and_signature(tmp)
                     st.write("**Debug metadata:**")
                     st.write("Owner:", owner)
                     st.write("LogoID:", logo_id)
-                    st.write("Timestamp:", ts)
+                    st.write("Thời gian ký:", ts_vn)
                     st.write("Signature:", signature)
                     # show expected signature computed locally
                     key = read_key_from_file(KEY_PATH)
                     expected = create_hmac(data_field, key)
                     st.write("Expected hexdigest:", expected)
                 except Exception as ex:
-                    st.write("Không đọc được metadata:", ex)
+                    st.write("Không đọc được:", ex)
         else:
             st.warning("⚠️ Hãy tải ảnh đã ký để xác minh.")
 
 with tab3:
-    st.header("👀 Xem nội dung watermark trong ảnh (metadata)")
+    st.header("👀 Xem nội dung watermark trong ảnh")
     uploaded_view = st.file_uploader("Chọn ảnh đã ký (PNG/JPG)", type=["png","jpg","jpeg"], key="view")
     if st.button("Xem watermark"):
         if uploaded_view:
@@ -70,14 +69,15 @@ with tab3:
             with open(tmpv, "wb") as f:
                 f.write(uploaded_view.getbuffer())
             try:
-                data, signature, owner, logo_id, ts = extract_data_and_signature(tmpv)
+                data, signature, owner, logo_id, ts, ts_vn = extract_data_and_signature(tmpv)
                 st.text_area("Watermark (Data)", data, height=80)
                 st.text_area("Watermark (Signature)", signature, height=80)
                 st.text_input("Chủ sở hữu", owner)
                 st.text_input("Logo/ID", logo_id)
-                st.text_input("Thời gian ký", ts)
+                st.text_input("Thời gian ký", ts_vn)
             except Exception as e:
                 st.error(f"❌ Không đọc được watermark: {e}")
         else:
             st.warning("⚠️ Hãy chọn ảnh để xem watermark.")
+
 
