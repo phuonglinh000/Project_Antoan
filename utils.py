@@ -1,30 +1,39 @@
+# utils.py
 import os
-import secrets
 import hmac
 import hashlib
+from pathlib import Path
+from PIL import Image
 
-KEY_PATH = "keys/secret.key"
+BASE_DIR = Path(__file__).resolve().parent
+KEY_PATH = str(BASE_DIR / "secret.key")
 
-def make_secret_key(key_path: str = KEY_PATH):
-    os.makedirs(os.path.dirname(key_path), exist_ok=True)
-    if not os.path.exists(key_path):
-        secret = secrets.token_bytes(32)  
-        write_key_to_file(key_path, secret)
-        print("Da tao secret key .")
+def make_secret_key(path: str = KEY_PATH) -> str:
+    """Tạo secret.key nếu chưa có."""
+    if not os.path.exists(path):
+        key = os.urandom(32)
+        with open(path, "wb") as f:
+            f.write(key)
+    return path
 
-def write_key_to_file(key_path: str, secret: bytes):
-    with open(key_path, "wb") as f:
-        f.write(secret)
-
-def read_key_from_file(key_path: str = KEY_PATH) -> bytes:
-    with open(key_path, "rb") as f:
+def read_key_from_file(path: str = KEY_PATH) -> bytes:
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Secret key không tồn tại: {path}")
+    with open(path, "rb") as f:
         return f.read()
 
-def create_hmac(data, secret: bytes) -> str:
-    if isinstance(data, str):
-        data = data.encode("utf-8")
-    return hmac.new(secret, data, hashlib.sha256).hexdigest()
+def create_hmac(data: str, key: bytes) -> str:
+    """Trả về hexdigest (hex string)."""
+    return hmac.new(key, data.encode("utf-8"), hashlib.sha256).hexdigest()
 
-def verify_hmac(data, secret: bytes, signature: str) -> bool:
-    expected = create_hmac(data, secret)
-    return hmac.compare_digest(expected, signature)
+def verify_hmac(data: str, signature: str, key: bytes) -> bool:
+    expected = create_hmac(data, key)
+    # luôn strip khoảng trắng trước khi so sánh
+    return hmac.compare_digest(expected, signature.strip())
+
+# helper debug: in ra metadata PNG để kiểm tra
+def print_png_info(path: str):
+    img = Image.open(path)
+    print("PNG info keys:", img.info.keys())
+    for k, v in img.info.items():
+        print(k, "=", v)
