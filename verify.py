@@ -1,51 +1,31 @@
-import stepic
 from PIL import Image
-from utils import read_key_from_file, create_hmac, verify_hmac, KEY_PATH
-
-def read_watermark(image_path: str) -> str:
-    """Đọc watermark ẩn trong ảnh."""
-    img = Image.open(image_path)
-    return stepic.decode(img)
+from utils import read_key_from_file, verify_hmac, KEY_PATH
 
 def extract_data_and_signature(image_path: str):
     """
-    Trích xuất dữ liệu (Owner, LogoID, Timestamp) và chữ ký từ watermark trong ảnh.
-    Watermark dạng: Owner:xxx | LogoID:yyy | Timestamp:zzz | Signature:aaa
+    Đọc watermark từ metadata PNG.
+    Trả về: (data_field, signature, owner, logo_id, timestamp)
     """
-    watermark = read_watermark(image_path)
-    parts = watermark.split("|")
+    img = Image.open(image_path)
+    watermark = img.info.get("Watermark", "")
+    parts = watermark.split(" | ")
 
-    owner, logo_id, ts, signature = "", "", "", ""
-    for part in parts:
-        p = part.strip()
-        if p.startswith("Owner:"):
-            owner = p.split("Owner:")[1].strip()
-        elif p.startswith("LogoID:"):
-            logo_id = p.split("LogoID:")[1].strip()
-        elif p.startswith("Timestamp:"):
-            ts = p.split("Timestamp:")[1].strip()
-        elif p.startswith("Signature:"):
-            signature = p.split("Signature:")[1].strip()
+    data_field = " | ".join(parts[:-1])
+    sig_field = parts[-1].replace("Signature:", "")
+    owner = parts[0].replace("Owner:", "")
+    logo_id = parts[1].replace("LogoID:", "")
+    ts = parts[2].replace("Timestamp:", "")
 
-    # Dữ liệu gốc cần verify
-    data = f"Owner:{owner} | LogoID:{logo_id} | Timestamp:{ts}"
-    return data, signature, owner, logo_id, ts
+    return data_field, sig_field, owner, logo_id, ts
 
-def verify_image_signature(image_path: str, key_path=KEY_PATH) -> bool:
-    """
-    Kiểm tra chữ ký trong ảnh có hợp lệ không (ảnh có bị chỉnh sửa không).
-    """
-    # Trích xuất data & signature từ ảnh
-    data_in_img, signature_in_img, owner, logo_id, ts = extract_data_and_signature(image_path)
 
-    if not data_in_img or not signature_in_img:
-        return False  # Không có watermark hoặc thiếu thông tin
+def verify_image_signature(image_path: str) -> bool:
+    """Xác minh chữ ký HMAC từ ảnh."""
+    try:
+        data_field, signature, _, _, _ = extract_data_and_signature(image_path)
+        key = read_key_from_file(KEY_PATH)
+        return verify_hmac(data_field, signature, key)
+    except Exception as e:
+        print(f"❌ Lỗi xác minh: {e}")
+        return False
 
-    # Đọc key
-    key = read_key_from_file(key_path)
-
-    # Sinh chữ ký mong đợi
-    expected_signature = create_hmac(data_in_img, key)
-
-    # So sánh chữ ký
-    return verify_hmac(data_in_img, key, signature_in_img)

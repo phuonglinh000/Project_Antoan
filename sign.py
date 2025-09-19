@@ -1,65 +1,33 @@
-# sign.py
-from PIL import Image, ImageDraw, ImageFont
-import stepic
-import os, time
+from PIL import Image, PngImagePlugin
+import time, os
 from utils import make_secret_key, read_key_from_file, create_hmac, KEY_PATH
 
-def embed_visible_watermark(input_path: str, output_path: str, text: str, font_size=32):
-    """Thêm watermark chữ hiển thị lên ảnh (góc phải dưới)."""
-    img = Image.open(input_path).convert("RGBA")
-    txt_layer = Image.new("RGBA", img.size, (255, 255, 255, 0))
-    draw = ImageDraw.Draw(txt_layer)
+def sign_image(input_image: str, output_image: str, owner: str, logo_id: str):
+    """Ký ảnh bằng cách nhúng watermark (metadata PNG)."""
 
-    try:
-        font = ImageFont.truetype("arial.ttf", font_size)
-    except Exception:
-        font = ImageFont.load_default()
-
-    w, h = img.size
-    text_w, text_h = draw.textsize(text, font=font)
-    pos = (w - text_w - 10, h - text_h - 10)
-
-    draw.text(pos, text, fill=(255, 255, 255, 150), font=font)
-
-    watermarked = Image.alpha_composite(img, txt_layer).convert("RGB")
-    temp_png = output_path + ".tmp.png"
-    watermarked.save(temp_png, format="PNG")
-    return temp_png
-
-def sign_image(input_image: str, owner: str, logo_id: str, output_image: str):
-    """
-    Tạo và nhúng watermark (ẩn + hiện) vào ảnh.
-    - input_image: đường dẫn ảnh gốc
-    - owner: tên/chủ sở hữu (ví dụ brand)
-    - logo_id: mã logo / định danh
-    - output_image: nơi lưu ảnh đã ký
-    """
+    # Tạo thư mục nếu chưa có
     os.makedirs(os.path.dirname(output_image) or ".", exist_ok=True)
 
-    # Tạo khóa bí mật nếu chưa có
+    # Tạo hoặc đọc khóa bí mật
     make_secret_key()
     key = read_key_from_file(KEY_PATH)
 
-    # Data để ký
+    # Tạo dữ liệu cần ký
     ts = int(time.time())
     data_field = f"Owner:{owner} | LogoID:{logo_id} | Timestamp:{ts}"
     signature = create_hmac(data_field, key)
     payload = f"{data_field} | Signature:{signature}"
 
-    # Bước 1: thêm visible watermark
-    visible_text = f"{owner} ©"
-    temp_png = embed_visible_watermark(input_image, output_image, visible_text)
+    # Load ảnh gốc
+    img = Image.open(input_image)
 
-    # Bước 2: nhúng invisible watermark
-    img = Image.open(temp_png).convert("RGBA")
-    encoded_img = stepic.encode(img, payload.encode("utf-8"))
-    encoded_img.save(output_image, "PNG")
+    # Thêm metadata
+    meta = PngImagePlugin.PngInfo()
+    meta.add_text("Watermark", payload)
 
-    # Xóa file tạm
-    try:
-        os.remove(temp_png)
-    except Exception:
-        pass
+    # Lưu ảnh với metadata
+    img.save(output_image, "PNG", pnginfo=meta)
 
-    print(f"✅ Ảnh đã được ký và lưu vào {output_image}")
+    print(f"✅ Ảnh đã ký và lưu vào {output_image}")
     return output_image
+
