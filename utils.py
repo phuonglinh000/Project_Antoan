@@ -37,3 +37,4 @@ def print_png_info(path: str):
     print("PNG info keys:", img.info.keys())
     for k, v in img.info.items():
         print(k, "=", v)
+
