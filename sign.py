@@ -1,10 +1,10 @@
-# sign.py
+
 from PIL import Image, ImageDraw, ImageFont, PngImagePlugin
 import os, time
 from utils import read_key_from_file, create_hmac, make_secret_key, KEY_PATH
 
 def embed_visible_watermark_image(img: Image.Image, owner: str, font_size: int = 32) -> Image.Image:
-    """Trả về Image có watermark chữ (góc phải dưới)."""
+    
     if img.mode != "RGBA":
         base = img.convert("RGBA")
     else:
@@ -31,7 +31,7 @@ def sign_image(input_path: str, output_path: str, owner: str, logo_id: str) -> s
     """
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
 
-    # ensure key exists
+    
     make_secret_key()
     key = read_key_from_file(KEY_PATH)
 
@@ -54,7 +54,7 @@ def sign_image(input_path: str, output_path: str, owner: str, logo_id: str) -> s
 
     img_with_text.save(output_path, "PNG", pnginfo=meta)
 
-    print(f"✅ Ảnh đã ký: {output_path}")
+    print(f" Ảnh đã ký: {output_path}")
     return output_path
 
 
