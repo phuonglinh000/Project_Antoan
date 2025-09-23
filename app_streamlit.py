@@ -10,19 +10,19 @@ from db import save_image_history, get_all_history   # kết nối MySQL
 # Tạo thư mục lưu ảnh
 os.makedirs("images", exist_ok=True)
 
-st.title("🔐 WATERMARK & HMAC (Metadata + Lưu DB)")
+st.title(" WATERMARK & HMAC (Metadata + Lưu DB)")
 
 # Tabs chức năng
 tab1, tab2, tab3, tab4 = st.tabs([
-    "✍️ Tạo chữ ký",
-    "🔍 Xác minh ảnh",
-    "👀 Xem watermark",
-    "📜 Lịch sử"
+    " Tạo chữ ký",
+    " Xác minh ảnh",
+    " Xem watermark",
+    " Lịch sử"
 ])
 
 # TAB 1: Ký ảnh
 with tab1:
-    st.header("✍️ Tạo chữ ký và nhúng vào ảnh")
+    st.header(" Tạo chữ ký và nhúng vào ảnh")
     uploaded_file = st.file_uploader("Chọn ảnh để ký (PNG/JPG)", type=["png","jpg","jpeg"], key="sign")
     owner_input = st.text_input("Tên chủ sở hữu (Owner)", key="owner_sign")
     logo_input = st.text_input("Mã logo/ID", key="logo_sign")
@@ -43,14 +43,14 @@ with tab1:
                 filename = os.path.basename(signed_path)
                 save_image_history(filename, owner, logo_id, ts_vn, signature, description="Ảnh đã ký")
             except Exception as e:
-                st.error(f"⚠️ Không lưu được vào DB: {e}")
+                st.error(f" Không lưu được vào DB: {e}")
 
             st.success("✅ Ảnh đã được ký và lưu lịch sử vào DB!")
             st.image(signed_path, caption=f"Ảnh đã ký bởi {owner_input}")
             with open(signed_path, "rb") as f:
-                st.download_button("⬇️ Tải ảnh đã ký", f, file_name="signed.png")
+                st.download_button("⬇ Tải ảnh đã ký", f, file_name="signed.png")
         else:
-            st.warning("⚠️ Hãy chọn ảnh và nhập đầy đủ thông tin.")
+            st.warning(" Hãy chọn ảnh và nhập đầy đủ thông tin.")
 
 # TAB 2: Xác minh
 with tab2:
@@ -65,9 +65,9 @@ with tab2:
 
             result = verify_image_signature(tmp)
             if result:
-                st.success("✅ Chữ ký hợp lệ: Ảnh chưa bị chỉnh sửa!")
+                st.success(" Chữ ký hợp lệ: Ảnh chưa bị chỉnh sửa!")
             else:
-                st.error("❌ Chữ ký KHÔNG hợp lệ: Ảnh đã bị chỉnh sửa.")
+                st.error(" Chữ ký KHÔNG hợp lệ: Ảnh đã bị chỉnh sửa.")
                 try:
                     data_field, signature, owner, logo_id, ts, ts_vn = extract_data_and_signature(tmp)
                     st.write("**Debug metadata:**")
@@ -82,7 +82,7 @@ with tab2:
                 except Exception as ex:
                     st.write("Không đọc được:", ex)
         else:
-            st.warning("⚠️ Hãy tải ảnh đã ký để xác minh.")
+            st.warning(" Hãy tải ảnh đã ký để xác minh.")
 
 # TAB 3: Xem watermark
 with tab3:
@@ -103,13 +103,13 @@ with tab3:
                 st.text_input("Logo/ID", logo_id)
                 st.text_input("Thời gian ký", ts_vn)
             except Exception as e:
-                st.error(f"❌ Không đọc được watermark: {e}")
+                st.error(f" Không đọc được watermark: {e}")
         else:
-            st.warning("⚠️ Hãy chọn ảnh để xem watermark.")
+            st.warning(" Hãy chọn ảnh để xem watermark.")
 
 # TAB 4: Lịch sử
 with tab4:
-    st.header("📜 Lịch sử ký ảnh")
+    st.header(" Lịch sử ký ảnh")
     try:
         rows = get_all_history()
         if rows:
@@ -118,4 +118,4 @@ with tab4:
         else:
             st.info("Chưa có dữ liệu trong lịch sử.")
     except Exception as e:
-        st.error(f"⚠️ Không lấy được lịch sử: {e}")
+        st.error(f" Không lấy được lịch sử: {e}")
