@@ -39,7 +39,7 @@ def sign_image(input_path: str, output_path: str, owner: str, logo_id: str) -> s
     data_field = f"Owner:{owner} | LogoID:{logo_id} | Timestamp:{ts}"
     signature = create_hmac(data_field, key)
 
-    # load image (KHÔNG convert ở bước mở ban đầu)
+    
     img = Image.open(input_path)
 
     # add visible watermark (tùy chọn)
