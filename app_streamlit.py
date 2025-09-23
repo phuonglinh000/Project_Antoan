@@ -45,7 +45,7 @@ with tab1:
             except Exception as e:
                 st.error(f" Không lưu được vào DB: {e}")
 
-            st.success("✅ Ảnh đã được ký và lưu lịch sử vào DB!")
+            st.success(" Ảnh đã được ký và lưu lịch sử vào DB!")
             st.image(signed_path, caption=f"Ảnh đã ký bởi {owner_input}")
             with open(signed_path, "rb") as f:
                 st.download_button("⬇ Tải ảnh đã ký", f, file_name="signed.png")
