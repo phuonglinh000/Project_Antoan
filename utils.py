@@ -26,10 +26,9 @@ def create_hmac(data: str, key: bytes) -> str:
 
 def verify_hmac(data: str, signature: str, key: bytes) -> bool:
     expected = create_hmac(data, key)
-    # luôn strip khoảng trắng trước khi so sánh
-    return hmac.compare_digest(expected, signature.strip())
 
-# helper debug: in ra metadata PNG để kiểm tra
+    return hmac.compare_digest(expected, signature.strip())  #bỏ khoảng trắng 
+
 def print_png_info(path: str):
     img = Image.open(path)
     print("PNG info keys:", img.info.keys())
