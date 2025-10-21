@@ -1,10 +1,10 @@
 from PIL import Image
 from utils import read_key_from_file, verify_hmac, KEY_PATH
-import datetime  # thêm import
+import datetime  
 
 def extract_data_and_signature(image_path: str):
     """Trả về: (data_field, signature, owner, logo_id, timestamp, timestamp_vn)"""
-    img = Image.open(image_path)   # KHÔNG convert
+    img = Image.open(image_path)   
     meta = img.info
 
     owner = meta.get("Owner", "").strip()
@@ -12,7 +12,6 @@ def extract_data_and_signature(image_path: str):
     ts = meta.get("Timestamp", "").strip()
     signature = meta.get("Signature", "").strip()
 
-    # --- chuyển đổi timestamp sang giờ VN ---
     timestamp_vn = ""
     if ts.isdigit():
         try:

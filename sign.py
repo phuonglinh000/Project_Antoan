@@ -42,10 +42,10 @@ def sign_image(input_path: str, output_path: str, owner: str, logo_id: str) -> s
     
     img = Image.open(input_path)
 
-    # add visible watermark 
+    
     img_with_text = embed_visible_watermark_image(img, owner)
 
-    # create PNG metadata and save
+    
     meta = PngImagePlugin.PngInfo()
     meta.add_text("Owner", owner)
     meta.add_text("LogoID", logo_id)
